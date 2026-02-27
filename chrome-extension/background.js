@@ -61,7 +61,7 @@ async function startStreaming(payload) {
 async function streamIntel({ company, role, personName, extraPrompt }, apiKey) {
   const userContent = `I'm an SDR at Leadbeam cold calling a "${role}" at "${company}"${personName ? ` (${personName})` : ""}. Leadbeam is an AI-powered field sales platform: automates CRM data entry via voice/image, optimizes routes, discovers leads in territories, preps meetings, gives leaders real-time visibility into field activity and rep performance.
 
-Search the web for ${company}, then give me exactly 4 bullet points (short fragments, NOT full sentences):
+Give me exactly 4 bullet points about ${company} (short fragments, NOT full sentences):
 
 • What they sell / who they sell to
 • Whether they likely have field reps and why (industry, product, territory-based, in-person demos, etc.)
@@ -84,7 +84,6 @@ Keep each bullet to ~15 words max. Fragment style, no full sentences. Start each
         model: "claude-sonnet-4-20250514",
         max_tokens: 400,
         stream: true,
-        tools: [{ type: "web_search_20250305", name: "web_search" }],
         messages: [{ role: "user", content: userContent }],
       }),
     });
