@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Leadbeam Caller Intel</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="sidepanel.css">
+</head>
+<body>
+  <!-- Header -->
+  <header id="header">
+    <div id="logo">L</div>
+    <div>
+      <div id="title">Caller Intel</div>
+      <div id="subtitle">Leadbeam · Field Sales Intel</div>
+    </div>
+    <button id="settings-toggle" title="Settings">⚙</button>
+  </header>
+
+  <!-- Settings drawer -->
+  <div id="settings" class="hidden">
+    <label class="label" for="api-key-input">ANTHROPIC API KEY</label>
+    <div id="key-row">
+      <input type="password" id="api-key-input" placeholder="sk-ant-..." spellcheck="false">
+      <button id="save-key-btn">Save</button>
+    </div>
+    <div id="key-status"></div>
+  </div>
+
+  <!-- Search form -->
+  <div id="search-card">
+    <label class="label" for="company-input">COMPANY</label>
+    <input type="text" id="company-input" placeholder="e.g. Acme Corp">
+
+    <label class="label" style="margin-top:16px">ROLE</label>
+    <div id="role-buttons">
+      <button class="role-btn" data-role="CRO/VP of Sales">CRO / VP Sales</button>
+      <button class="role-btn" data-role="Sales Manager">Sales Manager</button>
+      <button class="role-btn" data-role="Sales Enablement">Enablement</button>
+    </div>
+
+    <label class="label" for="name-input" style="margin-top:16px">CONTACT NAME <span class="optional">(optional)</span></label>
+    <input type="text" id="name-input" placeholder="e.g. Jane Smith">
+
+    <label class="label" for="extra-input" style="margin-top:16px">ASK ANYTHING <span class="optional">(optional)</span></label>
+    <input type="text" id="extra-input" class="dashed" placeholder="e.g. Recent funding rounds?">
+
+    <button id="search-btn">
+      <span id="search-btn-text">Get Intel</span>
+      <span id="search-spinner" class="hidden spinner"></span>
+    </button>
+    <div id="scrape-status" class="hidden"></div>
+  </div>
+
+  <!-- Results area -->
+  <div id="results" class="hidden"></div>
+
+  <!-- Empty state -->
+  <div id="empty-state">
+    <div id="empty-icon">🎯</div>
+    <div id="empty-text">Open a contact in Apollo or HubSpot, then hit <strong>Get Intel</strong></div>
+  </div>
+
+  <!-- Recent searches -->
+  <div id="recent-searches" class="hidden">
+    <div class="label" style="margin-bottom:8px">RECENT</div>
+    <div id="recent-list"></div>
+  </div>
+
+  <script src="sidepanel.js"></script>
+</body>
+</html>

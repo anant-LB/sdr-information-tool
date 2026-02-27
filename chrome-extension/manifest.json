@@ -1,0 +1,43 @@
+{
+  "manifest_version": 3,
+  "name": "Leadbeam Caller Intel",
+  "version": "1.0.0",
+  "description": "AI-powered cold-call intel inside Apollo and HubSpot",
+  "permissions": [
+    "sidePanel",
+    "storage",
+    "activeTab",
+    "tabs"
+  ],
+  "host_permissions": [
+    "https://api.anthropic.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://app.apollo.io/*"],
+      "css": ["content/inject-button.css"],
+      "js": ["content/shared.js", "content/apollo.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://app.hubspot.com/*"],
+      "css": ["content/inject-button.css"],
+      "js": ["content/shared.js", "content/hubspot.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_title": "Leadbeam Caller Intel"
+  }
+}

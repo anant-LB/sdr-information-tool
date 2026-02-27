@@ -1,0 +1,51 @@
+/* Leadbeam "Get Intel" button injected into Apollo / HubSpot contact pages */
+
+.leadbeam-intel-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 10px;
+  padding: 5px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: #fff;
+  background: linear-gradient(135deg, #38BDF8, #818CF8);
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  vertical-align: middle;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+  box-shadow: 0 2px 8px rgba(56, 189, 248, 0.25);
+  z-index: 10000;
+  position: relative;
+}
+
+.leadbeam-intel-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(56, 189, 248, 0.35);
+}
+
+.leadbeam-intel-btn:active {
+  transform: translateY(0);
+  opacity: 0.8;
+}
+
+/* Add the Leadbeam "L" before the text */
+.leadbeam-intel-btn::before {
+  content: "L";
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.25);
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+}
