@@ -15,43 +15,14 @@
       <div id="title">Caller Intel</div>
       <div id="subtitle">Leadbeam · Field Sales Intel</div>
     </div>
-    <button id="settings-toggle" title="Settings">⚙</button>
   </header>
 
-  <!-- Settings drawer -->
-  <div id="settings" class="hidden">
-    <label class="label" for="api-key-input">ANTHROPIC API KEY</label>
-    <div id="key-row">
-      <input type="password" id="api-key-input" placeholder="sk-ant-..." spellcheck="false">
-      <button id="save-key-btn">Save</button>
-    </div>
-    <div id="key-status"></div>
-  </div>
-
-  <!-- Search form -->
-  <div id="search-card">
-    <label class="label" for="company-input">COMPANY</label>
-    <input type="text" id="company-input" placeholder="e.g. Acme Corp">
-
-    <label class="label" style="margin-top:16px">ROLE</label>
-    <div id="role-buttons">
-      <button class="role-btn" data-role="CRO/VP of Sales">CRO / VP Sales</button>
-      <button class="role-btn" data-role="Sales Manager">Sales Manager</button>
-      <button class="role-btn" data-role="Sales Enablement">Enablement</button>
-    </div>
-
-    <label class="label" for="name-input" style="margin-top:16px">CONTACT NAME <span class="optional">(optional)</span></label>
-    <input type="text" id="name-input" placeholder="e.g. Jane Smith">
-
-    <label class="label" for="extra-input" style="margin-top:16px">ASK ANYTHING <span class="optional">(optional)</span></label>
-    <input type="text" id="extra-input" class="dashed" placeholder="e.g. Recent funding rounds?">
-
-    <button id="search-btn">
-      <span id="search-btn-text">Get Intel</span>
-      <span id="search-spinner" class="hidden spinner"></span>
-    </button>
-    <div id="scrape-status" class="hidden"></div>
-  </div>
+  <!-- Get Intel button (always visible) -->
+  <button id="search-btn">
+    <span id="search-btn-text">Get Intel</span>
+    <span id="search-spinner" class="hidden spinner"></span>
+  </button>
+  <div id="scrape-status" class="hidden"></div>
 
   <!-- Results area -->
   <div id="results" class="hidden"></div>
@@ -66,6 +37,43 @@
   <div id="recent-searches" class="hidden">
     <div class="label" style="margin-bottom:8px">RECENT</div>
     <div id="recent-list"></div>
+  </div>
+
+  <!-- Collapsible: Override fields -->
+  <div class="toggle-bar" id="fields-toggle">
+    <span>Override Fields</span>
+    <span class="toggle-arrow">&#9662;</span>
+  </div>
+  <div id="fields-drawer" class="drawer hidden">
+    <label class="label" for="company-input">COMPANY</label>
+    <input type="text" id="company-input" placeholder="e.g. Acme Corp">
+
+    <label class="label" style="margin-top:14px">ROLE</label>
+    <div id="role-buttons">
+      <button class="role-btn" data-role="CRO/VP of Sales">CRO / VP Sales</button>
+      <button class="role-btn" data-role="Sales Manager">Sales Manager</button>
+      <button class="role-btn" data-role="Sales Enablement">Enablement</button>
+    </div>
+
+    <label class="label" for="name-input" style="margin-top:14px">CONTACT NAME <span class="optional">(optional)</span></label>
+    <input type="text" id="name-input" placeholder="e.g. Jane Smith">
+
+    <label class="label" for="extra-input" style="margin-top:14px">ASK ANYTHING <span class="optional">(optional)</span></label>
+    <input type="text" id="extra-input" class="dashed" placeholder="e.g. Recent funding rounds?">
+  </div>
+
+  <!-- Collapsible: API Key -->
+  <div class="toggle-bar" id="settings-toggle">
+    <span>API Key</span>
+    <span class="toggle-arrow">&#9662;</span>
+  </div>
+  <div id="settings" class="drawer hidden">
+    <label class="label" for="api-key-input">ANTHROPIC API KEY</label>
+    <div id="key-row">
+      <input type="password" id="api-key-input" placeholder="sk-ant-..." spellcheck="false">
+      <button id="save-key-btn">Save</button>
+    </div>
+    <div id="key-status"></div>
   </div>
 
   <script src="sidepanel.js"></script>

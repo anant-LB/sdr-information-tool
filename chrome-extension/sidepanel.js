@@ -1,5 +1,5 @@
 // Leadbeam Caller Intel — Side Panel Logic
-// One-click flow: scrape active tab → fill fields → call API → show bullets
+// One-click flow: scrape active tab → stream API response → render bullets live
 
 // ── Bullet metadata (colors + labels) ─────────────────────────────
 const bulletMeta = [
@@ -14,6 +14,8 @@ const bulletMeta = [
 let selectedRole = "";
 let recentSearches = [];
 let isLoading = false;
+let streamedText = "";
+let renderPending = false;
 
 // ── DOM refs ──────────────────────────────────────────────────────
 const $ = (sel) => document.querySelector(sel);
@@ -29,6 +31,8 @@ const recentDiv = $("#recent-searches");
 const recentList = $("#recent-list");
 const settingsDiv = $("#settings");
 const settingsToggle = $("#settings-toggle");
+const fieldsDrawer = $("#fields-drawer");
+const fieldsToggle = $("#fields-toggle");
 const apiKeyInput = $("#api-key-input");
 const saveKeyBtn = $("#save-key-btn");
 const keyStatus = $("#key-status");
@@ -55,7 +59,6 @@ function formatLine(text) {
 
 // ── Update button state ──────────────────────────────────────────
 function updateButtonState() {
-  // Button is always enabled unless we're mid-loading
   searchBtn.disabled = isLoading;
 }
 
@@ -71,15 +74,23 @@ document.querySelectorAll(".role-btn").forEach((btn) => {
 // ── Input listeners ──────────────────────────────────────────────
 companyInput.addEventListener("input", updateButtonState);
 
-// ── Settings toggle ──────────────────────────────────────────────
-settingsToggle.addEventListener("click", () => {
-  settingsDiv.classList.toggle("hidden");
-  if (!settingsDiv.classList.contains("hidden")) {
-    chrome.runtime.sendMessage({ type: "GET_API_KEY" }, (res) => {
-      if (res?.key) apiKeyInput.value = res.key;
-    });
-  }
+// ── Toggle bar handlers ──────────────────────────────────────────
+function setupToggle(toggleEl, drawerEl, onOpen) {
+  toggleEl.addEventListener("click", () => {
+    const opening = drawerEl.classList.contains("hidden");
+    drawerEl.classList.toggle("hidden");
+    toggleEl.classList.toggle("open", opening);
+    if (opening && onOpen) onOpen();
+  });
+}
+
+setupToggle(settingsToggle, settingsDiv, () => {
+  chrome.runtime.sendMessage({ type: "GET_API_KEY" }, (res) => {
+    if (res?.key) apiKeyInput.value = res.key;
+  });
 });
+
+setupToggle(fieldsToggle, fieldsDrawer);
 
 // ── Save API key ─────────────────────────────────────────────────
 saveKeyBtn.addEventListener("click", () => {
@@ -96,7 +107,7 @@ saveKeyBtn.addEventListener("click", () => {
   });
 });
 
-// ── Render loading skeletons ─────────────────────────────────────
+// ── Show loading skeletons (builds stable DOM with slots) ────────
 function showLoading() {
   isLoading = true;
   updateButtonState();
@@ -105,43 +116,65 @@ function showLoading() {
   emptyState.classList.add("hidden");
   recentDiv.classList.add("hidden");
 
-  const skeletonCount = extraInput.value.trim() ? 5 : 4;
-  let html = '<div class="result-card">';
-  for (let i = 0; i < skeletonCount; i++) {
-    html += `<div class="skeleton-item">
+  const total = extraInput.value.trim() ? 5 : 4;
+
+  const card = document.createElement("div");
+  card.className = "result-card";
+  card.innerHTML = '<div class="result-header">Intel Report</div>';
+
+  for (let i = 0; i < total; i++) {
+    const slot = document.createElement("div");
+    slot.id = `bullet-slot-${i}`;
+    slot.innerHTML = `<div class="skeleton-item">
       <div class="skeleton-dot"></div>
       <div class="skeleton-lines">
         <div class="skeleton-line" style="width:75%"></div>
         <div class="skeleton-line" style="width:90%"></div>
       </div>
     </div>`;
+    card.appendChild(slot);
   }
-  html += "</div>";
 
-  resultsDiv.innerHTML = html;
+  resultsDiv.innerHTML = "";
+  resultsDiv.appendChild(card);
   resultsDiv.classList.remove("hidden");
 }
 
-// ── Render results ───────────────────────────────────────────────
-function showResults(text) {
+// ── Render bullets progressively (updates slots in-place) ────────
+function renderStream(text) {
   const bullets = parseBullets(text);
-  let html = '<div class="result-card"><div class="result-header">Intel Report</div>';
+  const total = extraInput.value.trim() ? 5 : 4;
 
-  bullets.forEach((bullet, i) => {
-    const meta = bulletMeta[i] || bulletMeta[bulletMeta.length - 1];
-    html += `<div class="bullet-item">
-      <div class="bullet-dot" style="background:${meta.color}"></div>
-      <div class="bullet-content">
-        <div class="bullet-label" style="color:${meta.color}">${meta.label}</div>
-        <div class="bullet-text">${formatLine(bullet)}</div>
-      </div>
-    </div>`;
-  });
+  for (let i = 0; i < total; i++) {
+    const slot = document.getElementById(`bullet-slot-${i}`);
+    if (!slot) continue;
 
-  html += "</div>";
-  resultsDiv.innerHTML = html;
-  resultsDiv.classList.remove("hidden");
+    if (i < bullets.length) {
+      const meta = bulletMeta[i] || bulletMeta[bulletMeta.length - 1];
+      const newHtml = `<div class="bullet-item">
+        <div class="bullet-dot" style="background:${meta.color}"></div>
+        <div class="bullet-content">
+          <div class="bullet-label" style="color:${meta.color}">${meta.label}</div>
+          <div class="bullet-text">${formatLine(bullets[i])}</div>
+        </div>
+      </div>`;
+
+      // Only update if content changed (avoid unnecessary reflows)
+      if (slot.dataset.text !== bullets[i]) {
+        slot.innerHTML = newHtml;
+        slot.dataset.text = bullets[i];
+      }
+    }
+    // Slots that are still skeletons stay as-is — no touch needed
+  }
+
   emptyState.classList.add("hidden");
+}
+
+// ── Show final results (same slot approach, clean up) ────────────
+function showResults(text) {
+  // Do one final render to make sure everything is up to date
+  renderStream(text);
 }
 
 // ── Show error ───────────────────────────────────────────────────
@@ -200,7 +233,7 @@ function renderRecent() {
       const r = recentSearches[parseInt(btn.dataset.idx)];
       companyInput.value = r.company;
       selectRole(r.role);
-      doSearch(true); // skip scrape, use form values
+      doSearch(true);
     });
   });
 }
@@ -222,13 +255,11 @@ async function scrapeActiveTab() {
     const response = await chrome.tabs.sendMessage(tab.id, { type: "SCRAPE_CONTACT" });
     return response;
   } catch (err) {
-    // Content script not injected (not on Apollo/HubSpot)
     return { error: "Navigate to an Apollo or HubSpot contact page first." };
   }
 }
 
 // ── Main search flow ─────────────────────────────────────────────
-// skipScrape=true when using manual fields or recent searches
 async function doSearch(skipScrape = false) {
   if (isLoading) return;
   clearScrapeStatus();
@@ -244,14 +275,12 @@ async function doSearch(skipScrape = false) {
     const scraped = await scrapeActiveTab();
 
     if (scraped.error && !company) {
-      // No scraped data and no manual input
       clearScrapeStatus();
       showError(scraped.error);
       return;
     }
 
     if (!scraped.error) {
-      // Fill fields with scraped data (don't overwrite manual edits)
       if (scraped.company) {
         company = scraped.company;
         companyInput.value = company;
@@ -265,7 +294,6 @@ async function doSearch(skipScrape = false) {
         role = scraped.role;
       }
 
-      // Show what was detected
       const parts = [];
       if (scraped.company) parts.push(scraped.company);
       if (scraped.title) parts.push(scraped.title);
@@ -274,7 +302,7 @@ async function doSearch(skipScrape = false) {
     }
   }
 
-  // Step 2: Validate — need at least company and role
+  // Step 2: Validate
   if (!company) {
     clearScrapeStatus();
     showError("Could not detect company. Enter it manually and try again.");
@@ -287,9 +315,10 @@ async function doSearch(skipScrape = false) {
     return;
   }
 
-  // Step 3: Fire the API call
+  // Step 3: Start streaming API call
   showLoading();
   addRecent(company, role);
+  streamedText = "";
 
   const payload = {
     company,
@@ -299,19 +328,18 @@ async function doSearch(skipScrape = false) {
   };
 
   const res = await chrome.runtime.sendMessage({ type: "GET_INTEL", payload });
-  stopLoading();
 
   if (res.error) {
+    stopLoading();
     showError(res.error);
-  } else {
-    showResults(res.text);
+    return;
   }
+
+  // res.streaming === true — chunks will arrive via onMessage
+  // Loading state stays on until INTEL_DONE arrives
 }
 
-// ── Search button click ──────────────────────────────────────────
-searchBtn.addEventListener("click", () => doSearch(false));
-
-// ── Listen for prefill from content scripts (injected button) ────
+// ── Listen for streaming messages from background ────────────────
 chrome.runtime.onMessage.addListener((msg) => {
   if (msg.type === "PREFILL_CONTACT") {
     const { name, company, role } = msg.payload;
@@ -319,8 +347,43 @@ chrome.runtime.onMessage.addListener((msg) => {
     if (name) nameInput.value = name;
     if (role) selectRole(role);
     updateButtonState();
+    return;
+  }
+
+  if (msg.type === "INTEL_SEARCHING") {
+    searchBtnText.textContent = "Searching web…";
+    return;
+  }
+
+  if (msg.type === "INTEL_CHUNK") {
+    streamedText += msg.text;
+    if (!renderPending) {
+      renderPending = true;
+      requestAnimationFrame(() => {
+        renderPending = false;
+        renderStream(streamedText);
+      });
+    }
+    return;
+  }
+
+  if (msg.type === "INTEL_DONE") {
+    stopLoading();
+    if (streamedText) {
+      showResults(streamedText);
+    }
+    return;
+  }
+
+  if (msg.type === "INTEL_ERROR") {
+    stopLoading();
+    showError(msg.error);
+    return;
   }
 });
+
+// ── Search button click ──────────────────────────────────────────
+searchBtn.addEventListener("click", () => doSearch(false));
 
 // ── Init: load recent searches from storage ──────────────────────
 chrome.storage.local.get("recentSearches", (res) => {
