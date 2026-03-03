@@ -293,6 +293,9 @@ async function doSearch(skipScrape = false) {
       if (scraped.role) {
         selectRole(scraped.role);
         role = scraped.role;
+      } else if (scraped.title && !role) {
+        // No bucket match — use the raw title directly
+        role = scraped.title;
       }
 
       const parts = [];
