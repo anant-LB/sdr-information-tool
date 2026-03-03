@@ -61,12 +61,13 @@ async function startStreaming(payload) {
 async function streamIntel({ company, role, personName, extraPrompt }, apiKey) {
   const userContent = `I'm an SDR at Leadbeam cold calling a "${role}" at "${company}"${personName ? ` (${personName})` : ""}. Leadbeam is an AI-powered field sales platform: automates CRM data entry via voice/image, optimizes routes, discovers leads in territories, preps meetings, gives leaders real-time visibility into field activity and rep performance.
 
-Give me exactly 4 bullet points about ${company} (short fragments, NOT full sentences):
+Give me exactly 5 bullet points about ${company} (short fragments, NOT full sentences):
 
-• What they sell / who they sell to
-• Whether they likely have field reps and why (industry, product, territory-based, in-person demos, etc.)
-• What a ${role} at this type of company is probably stressed about right now related to their field sales org (be specific to the role level — e.g. CRO cares about forecast accuracy and pipeline visibility, Sales Manager cares about rep productivity and CRM compliance, Enablement cares about onboarding and tool adoption)
-• How Leadbeam specifically solves that stress (connect a specific Leadbeam feature to their pain — e.g. "voice-to-CRM saves reps 5hrs/wk on admin" or "real-time field activity dashboard fixes pipeline blind spots")
+• PRODUCT: What specific products/services does ${company} sell, to which specific customer segments, in which verticals? Be concrete — name actual product lines, industries served, or buyer personas, not generic descriptions.
+• FIELD SALES FIT: Do they likely have field reps? Why — what about their product, deal size, sales motion, or industry requires in-person selling?
+• WHAT THEY'RE THINKING: What is a ${role} at ${company} specifically losing sleep over right now? Think about what's unique to their company, industry, or competitive situation — not generic sales leadership concerns. What pressure is specific to THEIR business?
+• HIRING SIGNALS: Any signs ${company} is growing, restructuring, or investing in their sales org? Think new territories, job postings, leadership changes, acquisitions, or product launches that would create sales team needs.
+• LEADBEAM HOOK: Given the above, what is the single most compelling thing to say about Leadbeam on this call? Connect one specific Leadbeam feature to one specific pain at ${company}. Be sharp and specific.
 ${extraPrompt ? `• ${extraPrompt}` : ""}
 
 Keep each bullet to ~15 words max. Fragment style, no full sentences. Start each with "•"`;
@@ -81,8 +82,8 @@ Keep each bullet to ~15 words max. Fragment style, no full sentences. Start each
         "anthropic-dangerous-direct-browser-access": "true",
       },
       body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 400,
+        model: "claude-haiku-4-5-20251001",
+        max_tokens: 500,
         stream: true,
         messages: [{ role: "user", content: userContent }],
       }),

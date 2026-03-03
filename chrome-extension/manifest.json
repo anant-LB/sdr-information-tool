@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Leadbeam Caller Intel",
   "version": "1.0.0",
-  "description": "AI-powered cold-call intel inside Apollo and HubSpot",
+  "description": "AI-powered cold-call intel inside Apollo, HubSpot, and Nooks",
   "permissions": [
     "sidePanel",
     "storage",
@@ -29,6 +29,12 @@
       "matches": ["https://app.hubspot.com/*"],
       "css": ["content/inject-button.css"],
       "js": ["content/shared.js", "content/hubspot.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://app.nooks.in/*"],
+      "css": ["content/inject-button.css"],
+      "js": ["content/shared.js", "content/nooks.js"],
       "run_at": "document_idle"
     }
   ],

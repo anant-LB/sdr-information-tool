@@ -6,6 +6,7 @@ const bulletMeta = [
   { color: "#818CF8", label: "PRODUCT" },
   { color: "#38BDF8", label: "FIELD SALES FIT" },
   { color: "#F59E0B", label: "WHAT THEY'RE THINKING" },
+  { color: "#A78BFA", label: "HIRING SIGNALS" },
   { color: "#34D399", label: "LEADBEAM HOOK" },
   { color: "#F472B6", label: "CUSTOM" },
 ];
@@ -116,7 +117,7 @@ function showLoading() {
   emptyState.classList.add("hidden");
   recentDiv.classList.add("hidden");
 
-  const total = extraInput.value.trim() ? 5 : 4;
+  const total = extraInput.value.trim() ? 6 : 5;
 
   const card = document.createElement("div");
   card.className = "result-card";
@@ -143,7 +144,7 @@ function showLoading() {
 // ── Render bullets progressively (updates slots in-place) ────────
 function renderStream(text) {
   const bullets = parseBullets(text);
-  const total = extraInput.value.trim() ? 5 : 4;
+  const total = extraInput.value.trim() ? 6 : 5;
 
   for (let i = 0; i < total; i++) {
     const slot = document.getElementById(`bullet-slot-${i}`);
