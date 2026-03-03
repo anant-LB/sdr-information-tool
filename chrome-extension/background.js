@@ -59,18 +59,18 @@ async function startStreaming(payload) {
 
 // ── Streaming Anthropic API call ────────────────────────────────────
 async function streamIntel({ company, role, personName, extraPrompt }, apiKey) {
-  const userContent = `I'm an SDR at Leadbeam cold calling a "${role}" at "${company}"${personName ? ` (${personName})` : ""}. Leadbeam is an AI-powered field sales platform: automates CRM data entry via voice/image, optimizes routes, discovers leads in territories, preps meetings, gives leaders real-time visibility into field activity and rep performance.
+  const userContent = `I'm cold calling a ${role} at ${company}${personName ? ` named ${personName}` : ""}. I sell Leadbeam — AI field sales platform that automates CRM data entry via voice/image, optimizes rep routes, discovers leads in territories, preps meetings, and gives leaders real-time visibility into field activity.
 
-Give me exactly 5 bullet points about ${company} (short fragments, NOT full sentences):
+Give me exactly 5 bullet points about ${company}. Answer each directly with real information — no placeholders, no brackets, no templates. If you're unsure, give your best informed guess.
 
-• PRODUCT: What specific products/services does ${company} sell, to which specific customer segments, in which verticals? Be concrete — name actual product lines, industries served, or buyer personas, not generic descriptions.
-• FIELD SALES FIT: Do they likely have field reps? Why — what about their product, deal size, sales motion, or industry requires in-person selling?
-• WHAT THEY'RE THINKING: What is a ${role} at ${company} specifically losing sleep over right now? Think about what's unique to their company, industry, or competitive situation — not generic sales leadership concerns. What pressure is specific to THEIR business?
-• HIRING SIGNALS: Any signs ${company} is growing, restructuring, or investing in their sales org? Think new territories, job postings, leadership changes, acquisitions, or product launches that would create sales team needs.
-• LEADBEAM HOOK: Given the above, what is the single most compelling thing to say about Leadbeam on this call? Connect one specific Leadbeam feature to one specific pain at ${company}. Be sharp and specific.
+• What ${company} actually sells and who buys it
+• Why ${company} probably has field sales reps (or doesn't)
+• One specific thing keeping a ${role} at ${company} up at night right now
+• Any recent growth, hiring, or expansion signals at ${company}
+• The single sharpest Leadbeam pitch for this exact call
 ${extraPrompt ? `• ${extraPrompt}` : ""}
 
-Keep each bullet to ~15 words max. Fragment style, no full sentences. Start each with "•"`;
+Rules: ~15 words max per bullet. Fragments only, not full sentences. No labels or prefixes. Start each with "•". Never repeat the question back.`;
 
   try {
     const res = await fetch("https://api.anthropic.com/v1/messages", {
