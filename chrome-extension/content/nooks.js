@@ -29,43 +29,41 @@
     let title = "";
     let company = "";
 
-    // Strategy 1: Contact name — large heading at top of contact panel
-    const h1 = await waitForElement("h1", 5000);
-    if (h1) name = h1.textContent.trim();
-
-    if (!name) {
-      const headings = document.querySelectorAll("h2, h3");
-      for (const el of headings) {
-        const txt = el.textContent.trim();
-        if (txt && txt.length > 2 && txt.length < 60 && !txt.includes("•") && !isLabel(txt)) {
-          name = txt;
-          break;
-        }
+    // Strategy 1: Contact name — heading in the contact detail panel
+    // Try h1 first, then h2/h3
+    const headings = document.querySelectorAll("h1, h2, h3");
+    for (const el of headings) {
+      const txt = el.textContent.trim();
+      // Name headings: short, no separators, not a label
+      if (txt && txt.length > 2 && txt.length < 60 && !/[•·|]/.test(txt) && !isLabel(txt)) {
+        name = txt;
+        break;
       }
     }
 
-    // Strategy 2: Subtitle line — "Company • Title" format below the name
-    // Search broadly up from the h1
-    if (h1) {
-      let container = h1.parentElement;
-      for (let depth = 0; depth < 5 && container; depth++) {
-        const els = container.querySelectorAll("span, div, p");
-        for (const el of els) {
-          if (el === h1 || el.contains(h1) || h1.contains(el)) continue;
-          if (el.children.length > 5) continue;
+    // Strategy 2: Find "Company • Title" or "Company · Title" anywhere on the page
+    // This is the most reliable source — scan all elements for the separator pattern
+    const separatorRegex = /[•·]/;
+    const allEls = document.querySelectorAll("span, div, p, a");
+    for (const el of allEls) {
+      if (el.children.length > 8) continue;
+      const txt = el.textContent.trim();
+      if (!txt || txt.length < 5 || txt.length > 150) continue;
+      if (!separatorRegex.test(txt)) continue;
 
-          const txt = el.textContent.trim();
-          if (txt && txt.includes("•") && txt.length < 150 && txt.length > 3) {
-            const parts = txt.split("•").map((s) => s.trim()).filter(Boolean);
-            if (parts.length >= 2) {
-              company = parts[0];
-              title = parts.slice(1).join(" ").trim();
-            }
-            break;
-          }
-        }
-        if (company || title) break;
-        container = container.parentElement;
+      // Split on bullet or middle dot
+      const parts = txt.split(separatorRegex).map((s) => s.trim()).filter(Boolean);
+      if (parts.length >= 2) {
+        // Validate: first part should look like a company name, not a label
+        if (isLabel(parts[0])) continue;
+        // Skip if it looks like a list of labels (e.g. "Dashboard · Activity · Battlecards")
+        if (parts.length > 3) continue;
+        // Skip if parts are too short (likely UI elements)
+        if (parts[0].length < 2 || parts[1].length < 2) continue;
+
+        company = parts[0];
+        title = parts.slice(1).join(" ").trim();
+        break;
       }
     }
 
@@ -90,9 +88,26 @@
       }
     }
 
-    // Strategy 5: Parse document.title as last resort
+    // Strategy 5: Extract company from email domain as fallback
+    if (!company) {
+      const emailEls = document.querySelectorAll("a[href^='mailto:'], span, div");
+      for (const el of emailEls) {
+        const txt = el.textContent.trim();
+        const emailMatch = txt.match(/[\w.-]+@([\w-]+)\.\w+/);
+        if (emailMatch) {
+          // Capitalize the domain name: "advantech" -> "Advantech"
+          const domain = emailMatch[1];
+          if (domain.length > 2 && domain !== "gmail" && domain !== "yahoo" && domain !== "hotmail" && domain !== "outlook") {
+            company = domain.charAt(0).toUpperCase() + domain.slice(1);
+            break;
+          }
+        }
+      }
+    }
+
+    // Strategy 6: Parse document.title as last resort
     if (!name) {
-      const match = document.title.match(/^(.+?)[\s|•\-–—]/);
+      const match = document.title.match(/^(.+?)[\s|•·\-–—]/);
       if (match) name = match[1].trim();
     }
 
